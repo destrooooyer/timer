@@ -4,13 +4,17 @@
     <group android:checkableBehavior="single">
 
         <item
-            android:title="time"></item>
+            android:id="@+id/menu_time"
+            android:title="@string/time"></item>
         <item
-            android:title="time"></item>
+            android:id="@+id/menu_count_down"
+            android:title="@string/count_down"></item>
         <item
-            android:title="time"></item>
+            android:id="@+id/menu_alarm_clock"
+            android:title="@string/alarm_clock"></item>
         <item
-            android:title="time"></item>
+            android:id="@+id/menu_memorial_day"
+            android:title="@string/memorial_day"></item>
 
     </group>
 
