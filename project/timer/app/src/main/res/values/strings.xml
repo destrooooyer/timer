@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">timer</string>
+    <string name="time">time</string>
+    <string name="alarm_clock">alarm clock</string>
+    <string name="count_down">count down</string>
+    <string name="memorial_day">きねんび</string>
+    <string name="open"></string>
+    <string name="close"></string>
+
+</resources>
