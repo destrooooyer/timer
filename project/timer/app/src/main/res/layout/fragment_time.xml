@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/fragment_time"
-              android:orientation="vertical"
+<LinearLayout android:id="@+id/fragment_time"
+              xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
-              android:layout_height="match_parent">
-    <TextView
+              android:layout_height="match_parent"
+              android:orientation="vertical"
+              android:padding="25px">
+
+    <TextClock
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/time"/>
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="140px"
+        android:paddingTop="20px"/>
+
+    <TextView
+        android:id="@+id/tv_date"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textSize="30px"
+        android:paddingBottom="50px"/>
+
+    <AnalogClock
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
 </LinearLayout>
