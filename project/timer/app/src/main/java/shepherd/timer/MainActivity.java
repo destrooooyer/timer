@@ -34,6 +34,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 
+
+		String message = this.getIntent().getStringExtra("msg");
+
+
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
 		drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
 		navigationView=(NavigationView) findViewById(R.id.nav_view);
@@ -72,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 		transaction.replace(R.id.frame_layout,fragment_time);
 		transaction.commit();
 
+		if(message!=null)
+			toolbar.setTitle("被唤醒-test");
 
 	}
 
