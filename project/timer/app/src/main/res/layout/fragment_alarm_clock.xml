@@ -14,4 +14,8 @@
         android:text="test"
         android:id="@+id/test_btn"
         android:onClick=""/>
+    <ListView
+        android:id="@+id/alarm_lv"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"></ListView>
 </LinearLayout>
