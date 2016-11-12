@@ -2,21 +2,30 @@ package shepherd.timer;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
+import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import org.xmlpull.v1.XmlPullParserException;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by DESTR on 2016/10/26.
@@ -24,50 +33,73 @@ import java.util.List;
 
 public class Fragment_alarm_clock extends Fragment
 {
-	private Button testBtn;
 	private Context context;
 	private ListView listView;
-	private ArrayList<alarmData> alarms;
+	private ArrayList<AlarmData> alarms;
+	private CoordinatorLayout coorLayout;
+	private FloatingActionButton floatActBtn;
+	private myAdapter adapter;
+	private int clickedPosition;
+
+	public Fragment_alarm_clock()
+	{
+
+	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState)
 	{
-		context = this.getActivity();
 		View v = inflater.inflate(R.layout.fragment_alarm_clock, container, false);
-		testBtn = (Button) v.findViewById(R.id.test_btn);
-		testBtn.setOnClickListener(testBtnOnClickListener);
+
+		context = this.getActivity();
+		adapter = new myAdapter(this.getActivity());
+		coorLayout = (CoordinatorLayout) v.findViewById(R.id.alarm_coor_layout);
+
 		listView = (ListView) v.findViewById(R.id.alarm_lv);
+		listView.setOnItemClickListener(lvOnClickListener);
+		listView.setOnItemLongClickListener(lvOnLongClickListener);
 
-		alarms=new ArrayList<alarmData>();
+		floatActBtn = (FloatingActionButton) v.findViewById(R.id.alarm_act_button);
+		floatActBtn.setOnClickListener(actBtnClickListener);
 
-		init();
-		myAdapter adapter = new myAdapter(this.getActivity());
+
+		alarms = new ArrayList<AlarmData>();
+		try
+		{
+			File file = new File(context.getFilesDir(), "alarmData.xml");
+			if (file.exists())
+			{
+				InputStream is = new FileInputStream(file);
+				Xml_IO xmlIO = new Xml_IO();
+				alarms = xmlIO.pullXML(is);
+				is.close();
+			}
+			else
+			{
+				listView.setBackgroundColor(Color.BLUE);
+				file.createNewFile();
+			}
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+		catch (XmlPullParserException e)
+		{
+			e.printStackTrace();
+		}
+
+
 		listView.setAdapter(adapter);
-
 
 		return v;
 	}
 
-	private void init()
-	{
-		alarms.add(new alarmData("123", 1));
-		alarms.add(new alarmData("123", 2));
-		alarms.add(new alarmData("1233", 1));
-	}
-
-
-	private View.OnClickListener testBtnOnClickListener = new View.OnClickListener()
-	{
-		@Override
-		public void onClick(View v)
-		{
-			Alarm_util.setAlarm(context, 0, 0, 0, 0, "123", true, 0);
-		}
-	};
 
 	public final class viewHolder
 	{
+		public TextView id;
 		public TextView time;
 		public TextView day;
 		public Switch sw;
@@ -111,31 +143,173 @@ public class Fragment_alarm_clock extends Fragment
 				holder.time = (TextView) convertView.findViewById(R.id.alarm_list_time_tv);
 				holder.day = (TextView) convertView.findViewById(R.id.alarm_list_day_tv);
 				holder.sw = (Switch) convertView.findViewById(R.id.alarm_list_switch);
+				holder.id = (TextView) convertView.findViewById(R.id.alarm_list_id);
 				convertView.setTag(holder);
 
 			}
 			else
-				holder=(viewHolder) convertView.getTag();
+				holder = (viewHolder) convertView.getTag();
 
+			String temp = "";
+			if (alarms.get(position).hour < 10)
+				temp += '0';
+			temp += String.valueOf(alarms.get(position).hour) + ":";
+			if (alarms.get(position).minute < 10)
+				temp += '0';
+			temp += String.valueOf(alarms.get(position).minute);
+			holder.time.setText(temp);
 
-			holder.time.setText(alarms.get(position).time);
-			holder.day.setText(String.valueOf(alarms.get(position).day));
+			temp = "";
+			if (alarms.get(position).repeat)
+			{
+				temp += "循环：";
+				String temp2[] = {"一", "二", "三", "四", "五", "六", "日"};
+				for (int i = 0; i < 7; i++)
+				{
+					if (alarms.get(position).checkedDays[i])
+						temp += temp2[i];
+				}
+			}
+			else
+				temp += "不循环";
+			holder.day.setText(temp);
+			holder.id.setText(String.valueOf(position + 1));
+			if (alarms.get(position).on)
+				holder.sw.setChecked(true);
+
 
 			return convertView;
 		}
 	}
 
-	public class alarmData
+	AdapterView.OnItemLongClickListener lvOnLongClickListener = new AdapterView.OnItemLongClickListener()
 	{
-		public String time;
-		public int day;
-
-		public alarmData(String time, int day)
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id)
 		{
-			this.time = time;
-			this.day = day;
+			Snackbar snackbar = Snackbar.make(coorLayout, "删除闹钟" + String.valueOf(position + 1), 2000);
+			snackbar.getView().setBackgroundColor(Color.GRAY);
+			snackbar.setAction("删除", new View.OnClickListener()
+			{
+				@Override
+				public void onClick(View v)
+				{
+					alarms.remove(position);
+
+					adapter.notifyDataSetChanged();
+
+					try
+					{
+						File file = new File(context.getFilesDir(), "alarmData.xml");
+						if (!file.exists())
+							file.createNewFile();
+						OutputStream os = new FileOutputStream(file);
+						Xml_IO xmlIO = new Xml_IO();
+						xmlIO.putXML(os, alarms);
+						os.flush();
+						os.close();
+					}
+					catch (IOException e)
+					{
+						e.printStackTrace();
+					}
+				}
+			});
+			snackbar.show();
+			return true;
+		}
+	};
+
+	AdapterView.OnItemClickListener lvOnClickListener = new AdapterView.OnItemClickListener()
+	{
+		@Override
+		public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+		{
+			clickedPosition = position;
+			Intent intent = new Intent();
+			intent.setClass(getActivity(), Set_alarm_activity.class);
+			startActivityForResult(intent, 23333);
+		}
+	};
+
+	View.OnClickListener actBtnClickListener = new View.OnClickListener()
+	{
+		@Override
+		public void onClick(View v)
+		{
+			Intent intent = new Intent();
+			intent.setClass(getActivity(), Set_alarm_activity.class);
+			startActivityForResult(intent, 233);
 		}
 
+	};
+
+	@Override
+	public void onActivityResult(int requestCode, int resultCode, Intent data)
+	{
+		if (requestCode == 233 && resultCode == 2333)
+		{
+			AlarmData alarmData = new AlarmData();
+			alarmData.hour = data.getExtras().getInt("hour");
+			alarmData.minute = data.getExtras().getInt("minute");
+			alarmData.repeat = data.getExtras().getBoolean("repeat");
+			alarmData.checkedDays[0] = data.getExtras().getBoolean("Mon");
+			alarmData.checkedDays[1] = data.getExtras().getBoolean("Tue");
+			alarmData.checkedDays[2] = data.getExtras().getBoolean("Wed");
+			alarmData.checkedDays[3] = data.getExtras().getBoolean("Thu");
+			alarmData.checkedDays[4] = data.getExtras().getBoolean("Fri");
+			alarmData.checkedDays[5] = data.getExtras().getBoolean("Sat");
+			alarmData.checkedDays[6] = data.getExtras().getBoolean("Sun");
+			alarmData.on = false;
+			alarms.add(alarmData);
+			adapter.notifyDataSetChanged();
+
+			try
+			{
+				File file = new File(context.getFilesDir(), "alarmData.xml");
+				if (!file.exists())
+					file.createNewFile();
+				OutputStream os = new FileOutputStream(file);
+				Xml_IO xmlIO = new Xml_IO();
+				xmlIO.putXML(os, alarms);
+				os.flush();
+				os.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+		else if (requestCode == 23333 && resultCode == 2333)
+		{
+			alarms.get(clickedPosition).hour = data.getExtras().getInt("hour");
+			alarms.get(clickedPosition).minute = data.getExtras().getInt("minute");
+			alarms.get(clickedPosition).repeat = data.getExtras().getBoolean("repeat");
+			alarms.get(clickedPosition).checkedDays[0] = data.getExtras().getBoolean("Mon");
+			alarms.get(clickedPosition).checkedDays[1] = data.getExtras().getBoolean("Tue");
+			alarms.get(clickedPosition).checkedDays[2] = data.getExtras().getBoolean("Wed");
+			alarms.get(clickedPosition).checkedDays[3] = data.getExtras().getBoolean("Thu");
+			alarms.get(clickedPosition).checkedDays[4] = data.getExtras().getBoolean("Fri");
+			alarms.get(clickedPosition).checkedDays[5] = data.getExtras().getBoolean("Sat");
+			alarms.get(clickedPosition).checkedDays[6] = data.getExtras().getBoolean("Sun");
+			adapter.notifyDataSetChanged();
+
+			try
+			{
+				File file = new File(context.getFilesDir(), "alarmData.xml");
+				if (!file.exists())
+					file.createNewFile();
+				OutputStream os = new FileOutputStream(file);
+				Xml_IO xmlIO = new Xml_IO();
+				xmlIO.putXML(os, alarms);
+				os.flush();
+				os.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
 	}
 
 }
