@@ -11,6 +11,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Message;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -35,6 +36,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
+import java.util.logging.Handler;
 
 /**
  * Created by DESTR on 2016/10/26.
@@ -49,6 +51,7 @@ public class Fragment_alarm_clock extends Fragment
 	private FloatingActionButton floatActBtn;
 	private myAdapter adapter;
 	private int clickedPosition;
+	private ringHandler handler;
 
 	private Uri notification;
 	private Ringtone r;
@@ -74,32 +77,46 @@ public class Fragment_alarm_clock extends Fragment
 		alarms = new ArrayList<AlarmData>();
 		listView.setAdapter(adapter);
 
-		new load().execute();
-
 		notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 		r = RingtoneManager.getRingtone(context, notification);
 
-		if (getActivity().getIntent().getStringExtra("msg") != null)
-			ring();
+		handler = new ringHandler();
+		new load().execute();
+
+
+//		if (getActivity().getIntent().getStringExtra("msg") == "唤醒")
+//			new ringAlarm(getActivity().getIntent().getIntExtra("id", -1)).execute();
 
 		return v;
 	}
 
-	private void ring()
-	{
-		r.play();
-		AlertDialog.Builder builder = new AlertDialog.Builder(context);
-		builder.setTitle("闹钟响了");
-		builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
-		{
-			@Override
-			public void onClick(DialogInterface dialog, int which)
-			{
-				r.stop();
-			}
-		});
-		builder.create().show();
-	}
+//	private class ringAlarm extends AsyncTask<String, String, String>
+//	{
+//		private int id;
+//
+//		public ringAlarm(int id)
+//		{
+//			this.id = id;
+//		}
+//
+//		@Override
+//		protected String doInBackground(String... params)
+//		{
+//			r.play();
+//			AlertDialog.Builder builder = new AlertDialog.Builder(context);
+//			builder.setTitle("闹钟响了");
+//			builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
+//			{
+//				@Override
+//				public void onClick(DialogInterface dialog, int which)
+//				{
+//					r.stop();
+//				}
+//			});
+//			builder.create().show();
+//			return null;
+//		}
+//	}
 
 	private class load extends AsyncTask<String, String, String>
 	{
@@ -122,6 +139,15 @@ public class Fragment_alarm_clock extends Fragment
 					file.createNewFile();
 				}
 				adapter.notifyDataSetChanged();
+
+				if (getActivity().getIntent().getStringExtra("msg") != null)
+				{
+					Message msg = new Message();
+					Bundle bundle = new Bundle();
+					bundle.putInt("id", getActivity().getIntent().getIntExtra("id", -1));
+					msg.setData(bundle);
+					handler.sendMessage(msg);
+				}
 			}
 			catch (IOException e)
 			{
@@ -137,6 +163,49 @@ public class Fragment_alarm_clock extends Fragment
 		}
 	}
 
+	class ringHandler extends android.os.Handler
+	{
+
+		private void clearIntent()
+		{
+			getActivity().getIntent().removeExtra("id");
+			getActivity().getIntent().removeExtra("msg");
+		}
+
+		@Override
+		public void handleMessage(Message msg)
+		{
+			int id = msg.getData().getInt("id");
+			clearIntent();
+			r.play();
+			AlertDialog.Builder builder = new AlertDialog.Builder(context);
+			builder.setTitle("闹钟响了");
+			builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
+			{
+				@Override
+				public void onClick(DialogInterface dialog, int which)
+				{
+					r.stop();
+				}
+			});
+			builder.create().show();
+
+			for (int i = 0; i < alarms.size(); i++)
+			{
+				if (alarms.get(i).id == id)
+				{
+					if (alarms.get(i).repeat)
+						setAlarm(i);
+					else
+					{
+						alarms.get(i).on = false;
+						adapter.notifyDataSetChanged();
+						new saveXml().execute();
+					}
+				}
+			}
+		}
+	}
 
 	public final class viewHolder
 	{
