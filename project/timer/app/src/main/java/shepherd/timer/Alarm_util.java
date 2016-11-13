@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.os.Build;
 
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.concurrent.SynchronousQueue;
 
 /**
@@ -17,7 +18,7 @@ public class Alarm_util
 {
 	/**
 	 * @param context
-	 * @param id      用来区分pendingintent
+	 * @param id      id，用来区分pendingintent
 	 * @param day     周几响
 	 * @param hour    时
 	 * @param minute  分
@@ -31,13 +32,14 @@ public class Alarm_util
 		Intent intent = new Intent("myAlarmClock");
 		PendingIntent pdi = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-		//test - alarm go off in 5s
-		Calendar calendar=Calendar.getInstance();
-		calendar.setTimeInMillis(System.currentTimeMillis());
-		calendar.add(Calendar.SECOND,5);
+		Calendar calendar = Calendar.getInstance();
+		//set hour and minute
+		calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH), hour, minute, 0);
+
+
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
 		{
-			am.setWindow(AlarmManager.RTC_WAKEUP,calendar.getTimeInMillis(),0,pdi);
+			am.setWindow(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 10000, pdi);    //windowLengthMillis=10000
 		}
 
 

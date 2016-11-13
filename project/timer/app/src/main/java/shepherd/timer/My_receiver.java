@@ -19,6 +19,7 @@ public class My_receiver extends BroadcastReceiver
 		Intent alarm = new Intent(context, MainActivity.class);
 
 		alarm.putExtra("msg","唤醒");
+		alarm.putExtra("msg2","唤醒");
 
 		alarm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 		context.startActivity(alarm);

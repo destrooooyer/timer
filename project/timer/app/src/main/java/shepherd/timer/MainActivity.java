@@ -16,6 +16,8 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import java.util.Locale;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener
 {
 	private Toolbar toolbar;
@@ -32,15 +34,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 	private Fragment_memorial fragment_memorial;
 	private PowerManager pm;
 	private PowerManager.WakeLock mWakelock;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+		Locale.setDefault(Locale.CHINA);
+
 		final Window win = getWindow();
 		win.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED | WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD);
 		win.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON | WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
-		pm = (PowerManager)getSystemService(this.POWER_SERVICE);
-		mWakelock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP |PowerManager.SCREEN_DIM_WAKE_LOCK, "SimpleTimer");
+		pm = (PowerManager) getSystemService(this.POWER_SERVICE);
+		mWakelock = pm.newWakeLock(PowerManager.ACQUIRE_CAUSES_WAKEUP | PowerManager.SCREEN_DIM_WAKE_LOCK, "Timer");
 
 
 		setContentView(R.layout.activity_main);
@@ -84,11 +89,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 		fragment_memorial = new Fragment_memorial();
 		fragment_time = new Fragment_time();
 
-		transaction.replace(R.id.frame_layout, fragment_time);
+		if (message == null)
+			transaction.replace(R.id.frame_layout, fragment_time);
+		else
+			transaction.replace(R.id.frame_layout, fragment_alarm_clock);
 		transaction.commit();
 
-		if (message != null)
-			toolbar.setTitle("被唤醒-test");
 
 	}
 

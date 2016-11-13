@@ -88,6 +88,11 @@ public class Xml_IO
 					eventType = parser.next();
 					alarm.on = Boolean.parseBoolean(parser.getText());
 				}
+				else if (parser.getName().equals("id"))
+				{
+					eventType = parser.next();
+					alarm.id = Integer.parseInt(parser.getText());
+				}
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
@@ -160,6 +165,10 @@ public class Xml_IO
 			serializer.startTag(null, "on");
 			serializer.text(String.valueOf(alarmData.on));
 			serializer.endTag(null, "on");
+
+			serializer.startTag(null, "id");
+			serializer.text(String.valueOf(alarmData.id));
+			serializer.endTag(null, "id");
 
 			serializer.endTag(null, "alarm");
 		}

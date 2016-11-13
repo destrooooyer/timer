@@ -8,6 +8,7 @@ public class AlarmData
 {
 	public int hour;
 	public int minute;
+	public int id;
 	public boolean repeat;
 	public boolean checkedDays[];
 	public boolean on;

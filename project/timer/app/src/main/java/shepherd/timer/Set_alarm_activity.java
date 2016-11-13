@@ -15,6 +15,9 @@ import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
+import java.util.Calendar;
+import java.util.Locale;
+
 
 /**
  * Created by DESTR on 2016/11/11.
@@ -41,6 +44,7 @@ public class Set_alarm_activity extends AppCompatActivity
 		setSupportActionBar(toolbar);
 
 		timePicker = (TimePicker) findViewById(R.id.set_alarm_time_picker);
+		timePicker.setIs24HourView(true);
 
 		tvDays = new TextView[7];
 		tvDays[0] = (TextView) findViewById(R.id.set_alarm_Mon);
@@ -60,6 +64,7 @@ public class Set_alarm_activity extends AppCompatActivity
 			checkedDays[i] = false;
 
 		checkBox = (CheckBox) findViewById(R.id.set_alarm_check);
+		checkBox.setChecked(true);
 		checkBox.setOnCheckedChangeListener(checkedChangeListener);
 
 		confirmButton = (Button) findViewById(R.id.set_alarm_confirm);
@@ -67,6 +72,12 @@ public class Set_alarm_activity extends AppCompatActivity
 
 		cancelButton = (Button) findViewById(R.id.set_alarm_cancel);
 		cancelButton.setOnClickListener(cancelOnClickListener);
+
+		Calendar calendar = Calendar.getInstance();
+		int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 2;
+		if (dayOfWeek == -1) dayOfWeek = 6;
+		checkedDays[dayOfWeek] = true;
+		tvDays[dayOfWeek].setTextColor(Color.rgb(0xFF, 0x7F, 0x00));
 	}
 
 
@@ -154,11 +165,24 @@ public class Set_alarm_activity extends AppCompatActivity
 					{
 						checkedDays[i] = true;
 						tvDays[i].setTextColor(Color.rgb(0xFF, 0x7F, 0x00));
+						checkBox.setChecked(true);
 					}
 					else
 					{
 						checkedDays[i] = false;
 						tvDays[i].setTextColor(defaultColor);
+
+						boolean flag = true;
+						for (int j = 0; j < 7; j++)
+						{
+							if (checkedDays[j] == true)
+							{
+								flag = false;
+								break;
+							}
+						}
+						if (flag == true)
+							checkBox.setChecked(false);
 					}
 				}
 		}

@@ -1,9 +1,15 @@
 package shepherd.timer;
 
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -13,6 +19,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -26,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Random;
 
 /**
  * Created by DESTR on 2016/10/26.
@@ -41,10 +50,8 @@ public class Fragment_alarm_clock extends Fragment
 	private myAdapter adapter;
 	private int clickedPosition;
 
-	public Fragment_alarm_clock()
-	{
-
-	}
+	private Uri notification;
+	private Ringtone r;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -65,35 +72,69 @@ public class Fragment_alarm_clock extends Fragment
 
 
 		alarms = new ArrayList<AlarmData>();
-		try
-		{
-			File file = new File(context.getFilesDir(), "alarmData.xml");
-			if (file.exists())
-			{
-				InputStream is = new FileInputStream(file);
-				Xml_IO xmlIO = new Xml_IO();
-				alarms = xmlIO.pullXML(is);
-				is.close();
-			}
-			else
-			{
-				listView.setBackgroundColor(Color.BLUE);
-				file.createNewFile();
-			}
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-		catch (XmlPullParserException e)
-		{
-			e.printStackTrace();
-		}
-
-
 		listView.setAdapter(adapter);
 
+		new load().execute();
+
+		notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+		r = RingtoneManager.getRingtone(context, notification);
+
+		if (getActivity().getIntent().getStringExtra("msg") != null)
+			ring();
+
 		return v;
+	}
+
+	private void ring()
+	{
+		r.play();
+		AlertDialog.Builder builder = new AlertDialog.Builder(context);
+		builder.setTitle("闹钟响了");
+		builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
+		{
+			@Override
+			public void onClick(DialogInterface dialog, int which)
+			{
+				r.stop();
+			}
+		});
+		builder.create().show();
+	}
+
+	private class load extends AsyncTask<String, String, String>
+	{
+
+		@Override
+		protected String doInBackground(String... params)
+		{
+			try
+			{
+				File file = new File(context.getFilesDir(), "alarmData.xml");
+				if (file.exists())
+				{
+					InputStream is = new FileInputStream(file);
+					Xml_IO xmlIO = new Xml_IO();
+					alarms = xmlIO.pullXML(is);
+					is.close();
+				}
+				else
+				{
+					file.createNewFile();
+				}
+				adapter.notifyDataSetChanged();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			catch (XmlPullParserException e)
+			{
+				e.printStackTrace();
+			}
+
+
+			return null;
+		}
 	}
 
 
@@ -137,6 +178,7 @@ public class Fragment_alarm_clock extends Fragment
 		public View getView(int position, View convertView, ViewGroup parent)
 		{
 			viewHolder holder = new viewHolder();
+			SwitchListener swListener = new SwitchListener(position);
 			if (convertView == null)
 			{
 				convertView = myInflater.inflate(R.layout.alarm_list_item, null);
@@ -169,16 +211,110 @@ public class Fragment_alarm_clock extends Fragment
 					if (alarms.get(position).checkedDays[i])
 						temp += temp2[i];
 				}
+				if (temp.equals("循环："))
+					temp += "未设置周几响";
 			}
 			else
-				temp += "不循环";
+			{
+				temp += "不循环：";
+
+				Calendar calendarAlarm = Calendar.getInstance();
+				Calendar calendarNow = Calendar.getInstance();
+				calendarAlarm.set(calendarAlarm.get(Calendar.YEAR), calendarAlarm.get(Calendar.MONTH), calendarAlarm.get(Calendar.DAY_OF_MONTH), alarms.get(position).hour, alarms.get(position).minute, 0);
+				calendarNow.set(calendarNow.get(Calendar.YEAR), calendarNow.get(Calendar.MONTH), calendarNow.get(Calendar.DAY_OF_MONTH), calendarNow.get(Calendar.HOUR_OF_DAY), calendarNow.get(Calendar.MINUTE), 0);
+				if (calendarAlarm.getTimeInMillis() <= calendarNow.getTimeInMillis())
+					temp += "明天";
+				else
+					temp += "今天";
+			}
 			holder.day.setText(temp);
 			holder.id.setText(String.valueOf(position + 1));
+
+			holder.sw.setOnCheckedChangeListener(null);
 			if (alarms.get(position).on)
 				holder.sw.setChecked(true);
+			else
+				holder.sw.setChecked(false);
+			holder.sw.setOnCheckedChangeListener(swListener);
 
 
 			return convertView;
+		}
+	}
+
+	private class saveXml extends AsyncTask<String, String, String>
+	{
+
+		@Override
+		protected String doInBackground(String... params)
+		{
+			try
+			{
+				File file = new File(context.getFilesDir(), "alarmData.xml");
+				if (!file.exists())
+					file.createNewFile();
+				OutputStream os = new FileOutputStream(file);
+				Xml_IO xmlIO = new Xml_IO();
+				xmlIO.putXML(os, alarms);
+				os.flush();
+				os.close();
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+			return null;
+		}
+	}
+
+	private void setAlarm(int position)
+	{
+
+		if (alarms.get(position).repeat)
+		{
+			for (int i = 0; i < 7; i++)
+			{
+				if (alarms.get(position).checkedDays[i])
+					Alarm_util.setAlarm(context, alarms.get(position).id, i, alarms.get(position).hour, alarms.get(position).minute, "", alarms.get(position).repeat, 1);
+			}
+		}
+		else
+		{
+			Alarm_util.setAlarm(context, alarms.get(position).id, -1, alarms.get(position).hour, alarms.get(position).minute, "", alarms.get(position).repeat, 0);
+		}
+	}
+
+	public class SwitchListener implements CompoundButton.OnCheckedChangeListener
+	{
+		private int position;
+
+		public SwitchListener(int position)
+		{
+			this.position = position;
+		}
+
+		@Override
+		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked)
+		{
+			if (buttonView.isChecked())
+			{
+				alarms.get(position).on = true;
+
+				Snackbar snackbar = Snackbar.make(coorLayout, "闹钟" + String.valueOf(position + 1) + "已启动", 2000);
+				snackbar.getView().setBackgroundColor(Color.GRAY);
+				snackbar.show();
+				setAlarm(position);
+			}
+			else
+			{
+				alarms.get(position).on = false;
+
+				Snackbar snackbar = Snackbar.make(coorLayout, "闹钟" + String.valueOf(position + 1) + "已关闭", 2000);
+				snackbar.getView().setBackgroundColor(Color.GRAY);
+				snackbar.show();
+			}
+			new saveXml().execute();
+
 		}
 	}
 
@@ -198,21 +334,7 @@ public class Fragment_alarm_clock extends Fragment
 
 					adapter.notifyDataSetChanged();
 
-					try
-					{
-						File file = new File(context.getFilesDir(), "alarmData.xml");
-						if (!file.exists())
-							file.createNewFile();
-						OutputStream os = new FileOutputStream(file);
-						Xml_IO xmlIO = new Xml_IO();
-						xmlIO.putXML(os, alarms);
-						os.flush();
-						os.close();
-					}
-					catch (IOException e)
-					{
-						e.printStackTrace();
-					}
+					new saveXml().execute();
 				}
 			});
 			snackbar.show();
@@ -261,24 +383,33 @@ public class Fragment_alarm_clock extends Fragment
 			alarmData.checkedDays[5] = data.getExtras().getBoolean("Sat");
 			alarmData.checkedDays[6] = data.getExtras().getBoolean("Sun");
 			alarmData.on = false;
+
+			Random rand = new Random();
+			int randInt = rand.nextInt();
+			while (randInt <= 0)
+				randInt = rand.nextInt();
+			while (true)
+			{
+				boolean flag = true;
+				for (AlarmData item : alarms)
+				{
+					if (item.id == randInt)
+					{
+						flag = false;
+						randInt = rand.nextInt();
+						break;
+					}
+				}
+
+				if (flag)
+					break;
+			}
+			alarmData.id = randInt;
+
 			alarms.add(alarmData);
 			adapter.notifyDataSetChanged();
 
-			try
-			{
-				File file = new File(context.getFilesDir(), "alarmData.xml");
-				if (!file.exists())
-					file.createNewFile();
-				OutputStream os = new FileOutputStream(file);
-				Xml_IO xmlIO = new Xml_IO();
-				xmlIO.putXML(os, alarms);
-				os.flush();
-				os.close();
-			}
-			catch (IOException e)
-			{
-				e.printStackTrace();
-			}
+			new saveXml().execute();
 		}
 		else if (requestCode == 23333 && resultCode == 2333)
 		{
@@ -292,6 +423,8 @@ public class Fragment_alarm_clock extends Fragment
 			alarms.get(clickedPosition).checkedDays[4] = data.getExtras().getBoolean("Fri");
 			alarms.get(clickedPosition).checkedDays[5] = data.getExtras().getBoolean("Sat");
 			alarms.get(clickedPosition).checkedDays[6] = data.getExtras().getBoolean("Sun");
+
+			alarms.get(clickedPosition).on = false;
 			adapter.notifyDataSetChanged();
 
 			try
