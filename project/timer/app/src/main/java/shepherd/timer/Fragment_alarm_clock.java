@@ -52,6 +52,7 @@ public class Fragment_alarm_clock extends Fragment
 	private myAdapter adapter;
 	private int clickedPosition;
 	private ringHandler handler;
+	private AdapterNotifyHandler adapterNotifyHandler;
 
 	private Uri notification;
 	private Ringtone r;
@@ -81,6 +82,7 @@ public class Fragment_alarm_clock extends Fragment
 		r = RingtoneManager.getRingtone(context, notification);
 
 		handler = new ringHandler();
+		adapterNotifyHandler = new AdapterNotifyHandler();
 		new load().execute();
 
 
@@ -138,7 +140,8 @@ public class Fragment_alarm_clock extends Fragment
 				{
 					file.createNewFile();
 				}
-				adapter.notifyDataSetChanged();
+				//adapter.notifyDataSetChanged();
+				adapterNotifyHandler.sendMessage(new Message());
 
 				if (getActivity().getIntent().getStringExtra("msg") != null)
 				{
@@ -160,6 +163,15 @@ public class Fragment_alarm_clock extends Fragment
 
 
 			return null;
+		}
+	}
+
+	class AdapterNotifyHandler extends android.os.Handler
+	{
+		@Override
+		public void handleMessage(Message msg)
+		{
+			adapter.notifyDataSetChanged();
 		}
 	}
 
@@ -344,7 +356,7 @@ public class Fragment_alarm_clock extends Fragment
 			for (int i = 0; i < 7; i++)
 			{
 				if (alarms.get(position).checkedDays[i])
-					Alarm_util.setAlarm(context, alarms.get(position).id, i, alarms.get(position).hour, alarms.get(position).minute, "", alarms.get(position).repeat, 1);
+					Alarm_util.setAlarm(context, alarms.get(position).id + i, i, alarms.get(position).hour, alarms.get(position).minute, "", alarms.get(position).repeat, 1);
 			}
 		}
 		else
