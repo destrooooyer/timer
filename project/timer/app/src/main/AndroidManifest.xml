@@ -24,6 +24,8 @@
 
         <activity android:name=".Set_alarm_activity">
         </activity>
+        <activity android:name=".Set_memorial_day_activity">
+        </activity>
         <activity android:name=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>

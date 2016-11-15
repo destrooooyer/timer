@@ -7,8 +7,6 @@ import android.content.Intent;
 import android.os.Build;
 
 import java.util.Calendar;
-import java.util.Locale;
-import java.util.concurrent.SynchronousQueue;
 
 /**
  * Created by DESTR on 2016/11/2.
@@ -75,7 +73,52 @@ public class Alarm_util
 		{
 			am.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pdi);
 		}
+	}
+
+	public static void cancelAlarm(Context context, int id)
+	{
+		AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent("myAlarmClock");
+		PendingIntent pdi = PendingIntent.getBroadcast(context, id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+		am.cancel(pdi);
+	}
 
 
+	public static void setAlarmClock(Context context, Alarm_Data alarm)
+	{
+		if (alarm.on)
+		{
+			if (alarm.repeat)
+			{
+				for (int i = 0; i < 7; i++)
+				{
+					if (alarm.checkedDays[i])
+						setAlarm(context, alarm.id + i, i, alarm.hour, alarm.minute, "", alarm.repeat, 1);
+				}
+			}
+			else
+			{
+				setAlarm(context, alarm.id, -1, alarm.hour, alarm.minute, "", alarm.repeat, 0);
+			}
+		}
+	}
+
+	public static void cancelAlarmClock(Context context, Alarm_Data alarm)
+	{
+		if (alarm.on == false)
+		{
+			if (alarm.repeat)
+			{
+				for (int i = 0; i < 7; i++)
+				{
+					if (alarm.checkedDays[i])
+						Alarm_util.cancelAlarm(context, alarm.id + i);
+				}
+			}
+			else
+			{
+				Alarm_util.cancelAlarm(context, alarm.id);
+			}
+		}
 	}
 }

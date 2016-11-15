@@ -17,10 +17,10 @@ import java.util.ArrayList;
 
 public class Xml_IO
 {
-	public ArrayList<AlarmData> pullXML(InputStream inputStream) throws XmlPullParserException, IOException
+	public ArrayList<Alarm_Data> pullXMLAlarm(InputStream inputStream) throws XmlPullParserException, IOException
 	{
-		ArrayList<AlarmData> data = new ArrayList<>();
-		AlarmData alarm = new AlarmData();
+		ArrayList<Alarm_Data> data = new ArrayList<>();
+		Alarm_Data alarm = new Alarm_Data();
 		XmlPullParser parser = Xml.newPullParser();
 		parser.setInput(inputStream, "UTF8");
 
@@ -31,7 +31,7 @@ public class Xml_IO
 			{
 				if (parser.getName().equals("alarm"))
 				{
-					alarm = new AlarmData();
+					alarm = new Alarm_Data();
 				}
 				else if (parser.getName().equals("repeat"))
 				{
@@ -108,13 +108,13 @@ public class Xml_IO
 		return data;
 	}
 
-	public void putXML(OutputStream os, ArrayList<AlarmData> alarmDatas) throws IOException
+	public void putXMLAlarm(OutputStream os, ArrayList<Alarm_Data> alarmDatas) throws IOException
 	{
 		XmlSerializer serializer = Xml.newSerializer();
 		serializer.setOutput(os, "UTF-8");
 		serializer.startDocument("UTF-8", true);
 
-		for (AlarmData alarmData : alarmDatas)
+		for (Alarm_Data alarmData : alarmDatas)
 		{
 			serializer.startTag(null, "alarm");
 
@@ -176,4 +176,95 @@ public class Xml_IO
 
 	}
 
+	public ArrayList<Memorial_Data> pullXMLMemorial(InputStream inputStream) throws XmlPullParserException, IOException
+	{
+		ArrayList<Memorial_Data> data = new ArrayList<>();
+		Memorial_Data memorialData = new Memorial_Data();
+		XmlPullParser parser = Xml.newPullParser();
+		parser.setInput(inputStream, "UTF8");
+
+		int eventType = parser.getEventType();
+		while (eventType != XmlPullParser.END_DOCUMENT)
+		{
+			if (eventType == XmlPullParser.START_TAG)
+			{
+				if (parser.getName().equals("memorial"))
+				{
+					memorialData = new Memorial_Data();
+				}
+				else if (parser.getName().equals("year"))
+				{
+					eventType = parser.next();
+					memorialData.year = Integer.parseInt(parser.getText());
+				}
+				else if (parser.getName().equals("month"))
+				{
+					eventType = parser.next();
+					memorialData.month = Integer.parseInt(parser.getText());
+				}
+				else if (parser.getName().equals("day"))
+				{
+					eventType = parser.next();
+					memorialData.day = Integer.parseInt(parser.getText());
+				}
+				else if (parser.getName().equals("on"))
+				{
+					eventType = parser.next();
+					memorialData.on = Boolean.parseBoolean(parser.getText());
+				}
+				else if (parser.getName().equals("title"))
+				{
+					eventType = parser.next();
+					memorialData.title = parser.getText();
+				}
+			}
+			else if (eventType == XmlPullParser.END_TAG)
+			{
+				if (parser.getName().equals("memorial"))
+				{
+					data.add(memorialData);
+				}
+			}
+			eventType = parser.next();
+		}
+
+
+		return data;
+	}
+
+	public void putXMLMemorial(OutputStream os, ArrayList<Memorial_Data> data) throws IOException
+	{
+		XmlSerializer serializer = Xml.newSerializer();
+		serializer.setOutput(os, "UTF-8");
+		serializer.startDocument("UTF-8", true);
+
+		for (Memorial_Data memorialData : data)
+		{
+			serializer.startTag(null, "memorial");
+
+			serializer.startTag(null, "year");
+			serializer.text(String.valueOf(memorialData.year));
+			serializer.endTag(null, "year");
+
+			serializer.startTag(null, "month");
+			serializer.text(String.valueOf(memorialData.month));
+			serializer.endTag(null, "month");
+
+			serializer.startTag(null, "day");
+			serializer.text(String.valueOf(memorialData.day));
+			serializer.endTag(null, "day");
+
+			serializer.startTag(null, "on");
+			serializer.text(String.valueOf(memorialData.on));
+			serializer.endTag(null, "on");
+
+			serializer.startTag(null, "title");
+			serializer.text(String.valueOf(memorialData.title));
+			serializer.endTag(null, "title");
+
+			serializer.endTag(null, "memorial");
+		}
+		serializer.endDocument();
+
+	}
 }

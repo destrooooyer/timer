@@ -36,7 +36,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Random;
-import java.util.logging.Handler;
 
 /**
  * Created by DESTR on 2016/10/26.
@@ -46,7 +45,7 @@ public class Fragment_alarm_clock extends Fragment
 {
 	private Context context;
 	private ListView listView;
-	private ArrayList<AlarmData> alarms;
+	private ArrayList<Alarm_Data> alarms;
 	private CoordinatorLayout coorLayout;
 	private FloatingActionButton floatActBtn;
 	private myAdapter adapter;
@@ -75,7 +74,7 @@ public class Fragment_alarm_clock extends Fragment
 		floatActBtn.setOnClickListener(actBtnClickListener);
 
 
-		alarms = new ArrayList<AlarmData>();
+		alarms = new ArrayList<Alarm_Data>();
 		listView.setAdapter(adapter);
 
 		notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
@@ -92,33 +91,6 @@ public class Fragment_alarm_clock extends Fragment
 		return v;
 	}
 
-//	private class ringAlarm extends AsyncTask<String, String, String>
-//	{
-//		private int id;
-//
-//		public ringAlarm(int id)
-//		{
-//			this.id = id;
-//		}
-//
-//		@Override
-//		protected String doInBackground(String... params)
-//		{
-//			r.play();
-//			AlertDialog.Builder builder = new AlertDialog.Builder(context);
-//			builder.setTitle("闹钟响了");
-//			builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
-//			{
-//				@Override
-//				public void onClick(DialogInterface dialog, int which)
-//				{
-//					r.stop();
-//				}
-//			});
-//			builder.create().show();
-//			return null;
-//		}
-//	}
 
 	private class load extends AsyncTask<String, String, String>
 	{
@@ -133,7 +105,7 @@ public class Fragment_alarm_clock extends Fragment
 				{
 					InputStream is = new FileInputStream(file);
 					Xml_IO xmlIO = new Xml_IO();
-					alarms = xmlIO.pullXML(is);
+					alarms = xmlIO.pullXMLAlarm(is);
 					is.close();
 				}
 				else
@@ -207,7 +179,7 @@ public class Fragment_alarm_clock extends Fragment
 				if (alarms.get(i).id == id)
 				{
 					if (alarms.get(i).repeat)
-						setAlarm(i);
+						Alarm_util.setAlarmClock(context, alarms.get(i));
 					else
 					{
 						alarms.get(i).on = false;
@@ -336,7 +308,7 @@ public class Fragment_alarm_clock extends Fragment
 					file.createNewFile();
 				OutputStream os = new FileOutputStream(file);
 				Xml_IO xmlIO = new Xml_IO();
-				xmlIO.putXML(os, alarms);
+				xmlIO.putXMLAlarm(os, alarms);
 				os.flush();
 				os.close();
 			}
@@ -348,22 +320,6 @@ public class Fragment_alarm_clock extends Fragment
 		}
 	}
 
-	private void setAlarm(int position)
-	{
-
-		if (alarms.get(position).repeat)
-		{
-			for (int i = 0; i < 7; i++)
-			{
-				if (alarms.get(position).checkedDays[i])
-					Alarm_util.setAlarm(context, alarms.get(position).id + i, i, alarms.get(position).hour, alarms.get(position).minute, "", alarms.get(position).repeat, 1);
-			}
-		}
-		else
-		{
-			Alarm_util.setAlarm(context, alarms.get(position).id, -1, alarms.get(position).hour, alarms.get(position).minute, "", alarms.get(position).repeat, 0);
-		}
-	}
 
 	public class SwitchListener implements CompoundButton.OnCheckedChangeListener
 	{
@@ -384,7 +340,7 @@ public class Fragment_alarm_clock extends Fragment
 				Snackbar snackbar = Snackbar.make(coorLayout, "闹钟" + String.valueOf(position + 1) + "已启动", 2000);
 				snackbar.getView().setBackgroundColor(Color.GRAY);
 				snackbar.show();
-				setAlarm(position);
+				Alarm_util.setAlarmClock(context, alarms.get(position));
 			}
 			else
 			{
@@ -393,6 +349,7 @@ public class Fragment_alarm_clock extends Fragment
 				Snackbar snackbar = Snackbar.make(coorLayout, "闹钟" + String.valueOf(position + 1) + "已关闭", 2000);
 				snackbar.getView().setBackgroundColor(Color.GRAY);
 				snackbar.show();
+				Alarm_util.cancelAlarmClock(context, alarms.get(position));
 			}
 			new saveXml().execute();
 
@@ -452,7 +409,7 @@ public class Fragment_alarm_clock extends Fragment
 	{
 		if (requestCode == 233 && resultCode == 2333)
 		{
-			AlarmData alarmData = new AlarmData();
+			Alarm_Data alarmData = new Alarm_Data();
 			alarmData.hour = data.getExtras().getInt("hour");
 			alarmData.minute = data.getExtras().getInt("minute");
 			alarmData.repeat = data.getExtras().getBoolean("repeat");
@@ -466,18 +423,18 @@ public class Fragment_alarm_clock extends Fragment
 			alarmData.on = false;
 
 			Random rand = new Random();
-			int randInt = rand.nextInt();
+			int randInt = rand.nextInt() / 10 * 10;
 			while (randInt <= 0)
-				randInt = rand.nextInt();
+				randInt = rand.nextInt() / 10 * 10;
 			while (true)
 			{
 				boolean flag = true;
-				for (AlarmData item : alarms)
+				for (Alarm_Data item : alarms)
 				{
 					if (item.id == randInt)
 					{
 						flag = false;
-						randInt = rand.nextInt();
+						randInt = rand.nextInt() / 10 * 10;
 						break;
 					}
 				}
@@ -515,7 +472,7 @@ public class Fragment_alarm_clock extends Fragment
 					file.createNewFile();
 				OutputStream os = new FileOutputStream(file);
 				Xml_IO xmlIO = new Xml_IO();
-				xmlIO.putXML(os, alarms);
+				xmlIO.putXMLAlarm(os, alarms);
 				os.flush();
 				os.close();
 			}
