@@ -121,4 +121,14 @@ public class Alarm_util
 			}
 		}
 	}
+
+	public static void setAlarmMemorial(Context context,Memorial_Data memorialData)
+	{
+
+	}
+
+	public static void cancelAlarmMemorial(Context context,Memorial_Data memorialData)
+	{
+
+	}
 }

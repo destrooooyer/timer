@@ -239,7 +239,8 @@ public class TickTockView extends View {
 	 */
 	public void start(Calendar endTime) {
 		if (endTime == null || endTime.before(Calendar.getInstance())) {
-			throw new IllegalArgumentException("endTime cannot be null and must be in the future");
+			//throw new IllegalArgumentException("endTime cannot be null and must be in the future");
+			return;
 		}
 
 		//Fix for issue #1 where hot deploying would result in text being rendered incorrectly.

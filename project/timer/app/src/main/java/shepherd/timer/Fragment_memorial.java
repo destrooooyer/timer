@@ -6,6 +6,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
@@ -50,6 +53,10 @@ public class Fragment_memorial extends Fragment
 	private int clickedPosition;
 	private myAdapter adapter;
 	private AdapterNotifyHandler adapterNotifyHandler;
+	private ringHandler handler;
+
+	private Uri notification;
+	private Ringtone r;
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -62,6 +69,9 @@ public class Fragment_memorial extends Fragment
 		listView = (ListView) v.findViewById(R.id.memorial_lv);
 		coorLayout = (CoordinatorLayout) v.findViewById(R.id.memorial_coor_layout);
 
+		notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
+		r = RingtoneManager.getRingtone(context, notification);
+
 		listView.setOnItemClickListener(lvOnClickListener);
 		listView.setOnItemLongClickListener(lvOnLongClickListener);
 
@@ -69,6 +79,7 @@ public class Fragment_memorial extends Fragment
 		floatActBtn.setOnClickListener(actBtnClickListener);
 
 		adapterNotifyHandler = new AdapterNotifyHandler();
+		handler = new ringHandler();
 
 		adapter = new myAdapter(context);
 		listView.setAdapter(adapter);
@@ -94,7 +105,7 @@ public class Fragment_memorial extends Fragment
 
 					adapter.notifyDataSetChanged();
 
-//					new Fragment_alarm_clock.saveXml().execute();
+					new saveXml().execute();
 				}
 			});
 			snackbar.show();
@@ -180,10 +191,10 @@ public class Fragment_memorial extends Fragment
 				holder = (viewHolder) convertView.getTag();
 
 			holder.title.setText(memorials.get(position).title);
-			String temp="";
-			temp+=String.valueOf(memorials.get(position).year)+"年";
-			temp+=String.valueOf(memorials.get(position).month)+"月";
-			temp+=String.valueOf(memorials.get(position).day)+"日";
+			String temp = "";
+			temp += String.valueOf(memorials.get(position).year) + "年";
+			temp += String.valueOf(memorials.get(position).month) + "月";
+			temp += String.valueOf(memorials.get(position).day) + "日";
 
 
 			holder.date.setText(temp);
@@ -219,6 +230,7 @@ public class Fragment_memorial extends Fragment
 				Snackbar snackbar = Snackbar.make(coorLayout, String.valueOf(memorials.get(position).title) + " 提醒已启动", 2000);
 				snackbar.getView().setBackgroundColor(Color.GRAY);
 				snackbar.show();
+				Alarm_util.setAlarmMemorial(context, memorials.get(position));
 			}
 			else
 			{
@@ -227,6 +239,7 @@ public class Fragment_memorial extends Fragment
 				Snackbar snackbar = Snackbar.make(coorLayout, String.valueOf(memorials.get(position).title) + " 提醒已关闭", 2000);
 				snackbar.getView().setBackgroundColor(Color.GRAY);
 				snackbar.show();
+				Alarm_util.cancelAlarmMemorial(context, memorials.get(position));
 			}
 
 			new saveXml().execute();
@@ -285,14 +298,14 @@ public class Fragment_memorial extends Fragment
 				//adapter.notifyDataSetChanged();
 				adapterNotifyHandler.sendMessage(new Message());
 
-//				if (getActivity().getIntent().getStringExtra("msg") != null)
-//				{
-//					Message msg = new Message();
-//					Bundle bundle = new Bundle();
-//					bundle.putInt("id", getActivity().getIntent().getIntExtra("id", -1));
-//					msg.setData(bundle);
-//					handler.sendMessage(msg);
-//				}
+				if (getActivity().getIntent().getStringExtra("msg") != null)
+				{
+					Message msg = new Message();
+					Bundle bundle = new Bundle();
+					bundle.putInt("id", getActivity().getIntent().getIntExtra("id", -1));
+					msg.setData(bundle);
+					handler.sendMessage(msg);
+				}
 			}
 			catch (IOException e)
 			{
