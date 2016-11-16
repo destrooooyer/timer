@@ -66,6 +66,7 @@ public class Fragment_count_down extends Fragment
 		pause = (Button) v.findViewById(R.id.countdown_pause);
 		start = (Button) v.findViewById(R.id.countdown_start);
 
+
 		hour.setAtmospheric(true);
 		hour.setSelectedItemTextColor(Color.rgb(0xff, 0x7f, 0x00));
 		hour.setCyclic(true);
@@ -136,6 +137,11 @@ public class Fragment_count_down extends Fragment
 
 			}
 		});
+
+		filter = false;
+		countdown.start(Calendar.getInstance());
+		countdown.stop();
+		filter = true;
 
 		pause.setText("暂停");
 		pause.setEnabled(false);
