@@ -28,4 +28,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:design:24.2.1'
     compile 'com.google.android.gms:play-services-appindexing:8.4.0'
+    compile 'cn.aigestudio.wheelpicker:WheelPicker:1.1.2'
 }
