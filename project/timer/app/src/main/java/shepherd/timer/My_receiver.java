@@ -17,8 +17,14 @@ public class My_receiver extends BroadcastReceiver
 	public void onReceive(Context context, Intent intent)
 	{
 		Intent alarm = new Intent(context, MainActivity.class);
-
-		alarm.putExtra("msg", "唤醒");
+		if (intent.getStringExtra("memorial") != null)
+		{
+			alarm.putExtra("msg2", "唤醒");
+		}
+		else
+		{
+			alarm.putExtra("msg", "唤醒");
+		}
 		alarm.putExtra("id", intent.getIntExtra("id", -1));
 
 		alarm.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

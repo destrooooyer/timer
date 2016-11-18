@@ -122,13 +122,33 @@ public class Alarm_util
 		}
 	}
 
-	public static void setAlarmMemorial(Context context,Memorial_Data memorialData)
+	public static void setAlarmMemorial(Context context, Memorial_Data memorialData)
 	{
+		AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+		Intent intent = new Intent("myAlarmClock");
+		intent.putExtra("memorial", "1");
+		intent.putExtra("id", memorialData.id);
+		PendingIntent pdi = PendingIntent.getBroadcast(context, memorialData.id, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+		Calendar calendar = Calendar.getInstance();
+		calendar.set(memorialData.year, memorialData.month, memorialData.day, 10, 0, 0);
+
+		if (calendar.getTimeInMillis() <= Calendar.getInstance().getTimeInMillis())
+			calendar.add(Calendar.YEAR, 1);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+		{
+			am.setWindow(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), 10000, pdi);    //windowLengthMillis = 10000
+		}
+		else
+		{
+			am.set(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pdi);
+		}
 
 	}
 
-	public static void cancelAlarmMemorial(Context context,Memorial_Data memorialData)
+	public static void cancelAlarmMemorial(Context context, Memorial_Data memorialData)
 	{
-
+		Alarm_util.cancelAlarm(context, memorialData.id);
 	}
 }

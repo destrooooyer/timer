@@ -62,9 +62,9 @@ public class Fragment_alarm_clock extends Fragment
 	{
 		View v = inflater.inflate(R.layout.fragment_alarm_clock, container, false);
 
-		context = this.getActivity();
-		adapter = new myAdapter(this.getActivity());
-		coorLayout = (CoordinatorLayout) v.findViewById(R.id.alarm_coor_layout);
+		context = this.getActivity();		//alarm manager 需要的 context
+		adapter = new myAdapter(this.getActivity());	//listview的adapter
+		coorLayout = (CoordinatorLayout) v.findViewById(R.id.alarm_coor_layout);	//在这上显示snack bar
 
 		listView = (ListView) v.findViewById(R.id.alarm_lv);
 		listView.setOnItemClickListener(lvOnClickListener);
@@ -77,12 +77,14 @@ public class Fragment_alarm_clock extends Fragment
 		alarms = new ArrayList<Alarm_Data>();
 		listView.setAdapter(adapter);
 
+		//铃声
 		notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM);
 		r = RingtoneManager.getRingtone(context, notification);
 
-		handler = new ringHandler();
-		adapterNotifyHandler = new AdapterNotifyHandler();
-		new load().execute();
+		handler = new ringHandler();	//响铃用的
+
+		adapterNotifyHandler = new AdapterNotifyHandler();	//【找姿势在这】在其他线程更新ui的姿势。只能在ui线程更新listview，所以其他线程要send message给这个handler来更新
+		new load().execute();	//在别的线程load xml
 
 
 //		if (getActivity().getIntent().getStringExtra("msg") == "唤醒")
@@ -115,13 +117,14 @@ public class Fragment_alarm_clock extends Fragment
 				//adapter.notifyDataSetChanged();
 				adapterNotifyHandler.sendMessage(new Message());
 
+				//receiver 收到之后，启动main activity带的intent里有msg，证明是被receiver启动的
 				if (getActivity().getIntent().getStringExtra("msg") != null)
 				{
 					Message msg = new Message();
 					Bundle bundle = new Bundle();
 					bundle.putInt("id", getActivity().getIntent().getIntExtra("id", -1));
 					msg.setData(bundle);
-					handler.sendMessage(msg);
+					handler.sendMessage(msg);	//处理闹钟
 				}
 			}
 			catch (IOException e)
@@ -154,14 +157,17 @@ public class Fragment_alarm_clock extends Fragment
 		{
 			getActivity().getIntent().removeExtra("id");
 			getActivity().getIntent().removeExtra("msg");
+			getActivity().getIntent().removeExtra("msg2");
 		}
 
 		@Override
 		public void handleMessage(Message msg)
 		{
 			int id = msg.getData().getInt("id");
-			clearIntent();
+			clearIntent();		//把intent弄没，不然每次转到这个fragment的时候都会响闹钟，因为intent还在
 			r.play();
+
+			//【找姿势在这】dialog的使用姿势如下
 			AlertDialog.Builder builder = new AlertDialog.Builder(context);
 			builder.setTitle("闹钟响了");
 			builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
@@ -178,9 +184,9 @@ public class Fragment_alarm_clock extends Fragment
 			{
 				if (alarms.get(i).id == id)
 				{
-					if (alarms.get(i).repeat)
+					if (alarms.get(i).repeat)		//重复的，重设闹钟
 						Alarm_util.setAlarmClock(context, alarms.get(i));
-					else
+					else							//非重复的，关闭
 					{
 						alarms.get(i).on = false;
 						adapter.notifyDataSetChanged();
@@ -191,7 +197,7 @@ public class Fragment_alarm_clock extends Fragment
 		}
 	}
 
-	public final class viewHolder
+	public final class viewHolder	//便于存list view的item，内容与alarm_list_item.xml对应
 	{
 		public TextView id;
 		public TextView time;
@@ -199,6 +205,7 @@ public class Fragment_alarm_clock extends Fragment
 		public Switch sw;
 	}
 
+	//list view 的adapter
 	public class myAdapter extends BaseAdapter
 	{
 
@@ -210,7 +217,7 @@ public class Fragment_alarm_clock extends Fragment
 		}
 
 		@Override
-		public int getCount()
+		public int getCount()	//元素个数
 		{
 			return alarms.size();
 		}
@@ -231,8 +238,10 @@ public class Fragment_alarm_clock extends Fragment
 		public View getView(int position, View convertView, ViewGroup parent)
 		{
 			viewHolder holder = new viewHolder();
+
+			//给每个item的switch单独弄一个listener的姿势，回来看的话可供参考
 			SwitchListener swListener = new SwitchListener(position);
-			if (convertView == null)
+			if (convertView == null)	//把listview的item里面的货存到viewholder里，这里有setTag和getTag的用法
 			{
 				convertView = myInflater.inflate(R.layout.alarm_list_item, null);
 				holder.time = (TextView) convertView.findViewById(R.id.alarm_list_time_tv);
@@ -283,6 +292,7 @@ public class Fragment_alarm_clock extends Fragment
 			holder.day.setText(temp);
 			holder.id.setText(String.valueOf(position + 1));
 
+			//【找姿势在这】防止setchecked触发onCheckedChangeListener的姿势
 			holder.sw.setOnCheckedChangeListener(null);
 			if (alarms.get(position).on)
 				holder.sw.setChecked(true);
@@ -295,6 +305,7 @@ public class Fragment_alarm_clock extends Fragment
 		}
 	}
 
+	//把操作文件相关的都弄成异步的，不然占着ui线程不是有毒？
 	private class saveXml extends AsyncTask<String, String, String>
 	{
 
@@ -321,6 +332,7 @@ public class Fragment_alarm_clock extends Fragment
 	}
 
 
+	//【找姿势在这】listview的item中的switch的listener，加了个position属性，这样就知道谁是谁了
 	public class SwitchListener implements CompoundButton.OnCheckedChangeListener
 	{
 		private int position;
@@ -356,11 +368,14 @@ public class Fragment_alarm_clock extends Fragment
 		}
 	}
 
+	//【找姿势在这】注意listview里的货在触发LongClick的时候也会触发click，解决的姿势就是返回值
+	//返回true不再触发click，返回false会触发click
 	AdapterView.OnItemLongClickListener lvOnLongClickListener = new AdapterView.OnItemLongClickListener()
 	{
 		@Override
 		public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id)
 		{
+			//【找姿势在这】使用snackbar的姿势
 			Snackbar snackbar = Snackbar.make(coorLayout, "删除闹钟" + String.valueOf(position + 1), 2000);
 			snackbar.getView().setBackgroundColor(Color.GRAY);
 			snackbar.setAction("删除", new View.OnClickListener()
@@ -388,7 +403,7 @@ public class Fragment_alarm_clock extends Fragment
 			clickedPosition = position;
 			Intent intent = new Intent();
 			intent.setClass(getActivity(), Set_alarm_activity.class);
-			startActivityForResult(intent, 23333);
+			startActivityForResult(intent, 23333);		//【找姿势在这】需要activity返回货的姿势，23333是request code
 		}
 	};
 
@@ -404,6 +419,7 @@ public class Fragment_alarm_clock extends Fragment
 
 	};
 
+	//【找姿势在这】用startactivityforresult，那个activity结束之后会调用onactivityresult，intent是货，前面那俩参数如其名
 	@Override
 	public void onActivityResult(int requestCode, int resultCode, Intent data)
 	{
@@ -422,6 +438,7 @@ public class Fragment_alarm_clock extends Fragment
 			alarmData.checkedDays[6] = data.getExtras().getBoolean("Sun");
 			alarmData.on = false;
 
+			//这里产生id，都是10的倍数，因为每个闹钟都有周1-周日，对应id+0~6，不会重复
 			Random rand = new Random();
 			int randInt = rand.nextInt() / 10 * 10;
 			while (randInt <= 0)

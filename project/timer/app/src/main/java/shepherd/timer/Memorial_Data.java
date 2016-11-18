@@ -11,4 +11,5 @@ public class Memorial_Data
 	int month;
 	int day;
 	boolean on;
+	int id;
 }

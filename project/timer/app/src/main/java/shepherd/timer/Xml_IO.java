@@ -217,6 +217,11 @@ public class Xml_IO
 					eventType = parser.next();
 					memorialData.title = parser.getText();
 				}
+				else if(parser.getName().equals("id"))
+				{
+					eventType=parser.next();
+					memorialData.id=Integer.parseInt(parser.getText());
+				}
 			}
 			else if (eventType == XmlPullParser.END_TAG)
 			{
@@ -261,6 +266,10 @@ public class Xml_IO
 			serializer.startTag(null, "title");
 			serializer.text(String.valueOf(memorialData.title));
 			serializer.endTag(null, "title");
+
+			serializer.startTag(null, "id");
+			serializer.text(String.valueOf(memorialData.id));
+			serializer.endTag(null, "id");
 
 			serializer.endTag(null, "memorial");
 		}

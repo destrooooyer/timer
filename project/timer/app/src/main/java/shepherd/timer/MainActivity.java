@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 		String message = this.getIntent().getStringExtra("msg");
+		String message2 = this.getIntent().getStringExtra("msg2");
 
 
 		toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -90,7 +91,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 		fragment_time = new Fragment_time();
 
 		if (message == null)
-			transaction.replace(R.id.frame_layout, fragment_time);
+			if (message2 == null)
+				transaction.replace(R.id.frame_layout, fragment_time);
+			else
+				transaction.replace(R.id.frame_layout, fragment_memorial);
 		else
 			transaction.replace(R.id.frame_layout, fragment_alarm_clock);
 		transaction.commit();

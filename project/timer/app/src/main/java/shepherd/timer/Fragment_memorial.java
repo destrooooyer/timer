@@ -193,7 +193,7 @@ public class Fragment_memorial extends Fragment
 			holder.title.setText(memorials.get(position).title);
 			String temp = "";
 			temp += String.valueOf(memorials.get(position).year) + "年";
-			temp += String.valueOf(memorials.get(position).month) + "月";
+			temp += String.valueOf(memorials.get(position).month + 1) + "月";
 			temp += String.valueOf(memorials.get(position).day) + "日";
 
 
@@ -258,6 +258,29 @@ public class Fragment_memorial extends Fragment
 			memorialData.day = data.getIntExtra("day", 0);
 			memorialData.title = data.getStringExtra("title");
 			memorialData.on = false;
+
+			Random rand = new Random();
+			int randInt = rand.nextInt();
+			while (randInt <= 0)
+				randInt = rand.nextInt() / 10 * 10 + 9;
+			while (true)
+			{
+				boolean flag = true;
+				for (Memorial_Data item : memorials)
+				{
+					if (item.id == randInt)
+					{
+						flag = false;
+						randInt = rand.nextInt() / 10 * 10 + 9;
+						break;
+					}
+				}
+
+				if (flag)
+					break;
+			}
+			memorialData.id = randInt;
+
 			memorials.add(memorialData);
 			adapter.notifyDataSetChanged();
 			new saveXml().execute();
@@ -298,7 +321,7 @@ public class Fragment_memorial extends Fragment
 				//adapter.notifyDataSetChanged();
 				adapterNotifyHandler.sendMessage(new Message());
 
-				if (getActivity().getIntent().getStringExtra("msg") != null)
+				if (getActivity().getIntent().getStringExtra("msg2") != null)
 				{
 					Message msg = new Message();
 					Bundle bundle = new Bundle();
@@ -323,6 +346,7 @@ public class Fragment_memorial extends Fragment
 
 	class AdapterNotifyHandler extends android.os.Handler
 	{
+
 		@Override
 		public void handleMessage(Message msg)
 		{
@@ -337,40 +361,40 @@ public class Fragment_memorial extends Fragment
 		{
 			getActivity().getIntent().removeExtra("id");
 			getActivity().getIntent().removeExtra("msg");
+			getActivity().getIntent().removeExtra("msg2");
 		}
 
 		@Override
 		public void handleMessage(Message msg)
 		{
-//			int id = msg.getData().getInt("id");
-//			clearIntent();
-//			r.play();
-//			AlertDialog.Builder builder = new AlertDialog.Builder(context);
-//			builder.setTitle("闹钟响了");
-//			builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
-//			{
-//				@Override
-//				public void onClick(DialogInterface dialog, int which)
-//				{
-//					r.stop();
-//				}
-//			});
-//			builder.create().show();
-//
-//			for (int i = 0; i < alarms.size(); i++)
-//			{
-//				if (alarms.get(i).id == id)
-//				{
-//					if (alarms.get(i).repeat)
-//						Alarm_util.setAlarmClock(context, alarms.get(i));
-//					else
-//					{
-//						alarms.get(i).on = false;
-//						adapter.notifyDataSetChanged();
-//						new Fragment_alarm_clock.saveXml().execute();
-//					}
-//				}
-//			}
+			int id = msg.getData().getInt("id");
+			clearIntent();
+
+			int position = -1;
+			for (int i = 0; i < memorials.size(); i++)
+			{
+				if (memorials.get(i).id == id)
+				{
+					Alarm_util.setAlarmMemorial(context, memorials.get(i));
+					position = i;
+				}
+			}
+			if (position != -1)
+			{
+				r.play();
+				AlertDialog.Builder builder = new AlertDialog.Builder(context);
+				builder.setTitle(memorials.get(position).title);
+				builder.setPositiveButton("确认", new DialogInterface.OnClickListener()
+				{
+					@Override
+					public void onClick(DialogInterface dialog, int which)
+					{
+						r.stop();
+					}
+				});
+				builder.create().show();
+
+			}
 		}
 	}
 
