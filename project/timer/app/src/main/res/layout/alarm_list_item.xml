@@ -42,7 +42,9 @@
                 android:layout_height="wrap_content"
                 android:text="test"
                 android:textAlignment="center"
-                android:textSize="60sp"/>
+                android:textSize="60sp"
+                android:textColor="@color/myBlack"
+                android:fontFamily="monospace" />
 
             <TextView
                 android:id="@+id/alarm_list_day_tv"
@@ -51,7 +53,8 @@
                 android:text="test"
                 android:textAlignment="center"
                 android:textSize="15sp"
-                android:paddingBottom="20px"/>
+                android:paddingBottom="20px"
+                android:textColor="@color/myBlack"/>
         </LinearLayout>
 
 

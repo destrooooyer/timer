@@ -3,13 +3,15 @@
               xmlns:app="http://schemas.android.com/apk/res-auto"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              android:background="@drawable/bg">
 
     <android.support.v7.widget.Toolbar android:id="@+id/set_alarm_toolbar"
                                        xmlns:android="http://schemas.android.com/apk/res/android"
                                        xmlns:app="http://schemas.android.com/apk/res-auto"
                                        android:layout_width="match_parent"
-                                       android:layout_height="wrap_content">
+                                       android:layout_height="wrap_content"
+                                        android:background="@color/myToolbar">
 
         <TextView
             android:layout_width="match_parent"
@@ -39,10 +41,11 @@
     <!--android:layout_weight="1"/>-->
     <!--</LinearLayout>-->
     <TimePicker
+        android:theme="@style/myPickerTheme"
         android:id="@+id/set_alarm_time_picker"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        ></TimePicker>
+        android:layout_height="wrap_content">
+    </TimePicker>
 
     <CheckBox
         android:id="@+id/set_alarm_check"
@@ -50,7 +53,8 @@
         android:layout_height="wrap_content"
         android:paddingLeft="20px"
         android:text="重复"
-        android:textSize="20sp"/>
+        android:textSize="20sp"
+        android:textColor="@color/myBlack" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -64,7 +68,8 @@
             android:layout_weight="1"
             android:text="一"
             android:textAlignment="center"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/myBlack"/>
 
         <TextView
             android:id="@+id/set_alarm_Tue"
@@ -73,7 +78,8 @@
             android:layout_weight="1"
             android:text="二"
             android:textAlignment="center"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/myBlack"/>
 
         <TextView
             android:id="@+id/set_alarm_Wed"
@@ -82,7 +88,8 @@
             android:layout_weight="1"
             android:text="三"
             android:textAlignment="center"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/myBlack"/>
 
         <TextView
             android:id="@+id/set_alarm_Thu"
@@ -91,7 +98,8 @@
             android:layout_weight="1"
             android:text="四"
             android:textAlignment="center"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/myBlack"/>
 
         <TextView
             android:id="@+id/set_alarm_Fri"
@@ -100,7 +108,8 @@
             android:layout_weight="1"
             android:text="五"
             android:textAlignment="center"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/myBlack"/>
 
         <TextView
             android:id="@+id/set_alarm_Sat"
@@ -109,7 +118,8 @@
             android:layout_weight="1"
             android:text="六"
             android:textAlignment="center"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/myBlack"/>
 
         <TextView
             android:id="@+id/set_alarm_Sun"
@@ -118,7 +128,8 @@
             android:layout_weight="1"
             android:text="日"
             android:textAlignment="center"
-            android:textSize="20sp"/>
+            android:textSize="20sp"
+            android:textColor="@color/myBlack"/>
     </LinearLayout>
 
     <LinearLayout

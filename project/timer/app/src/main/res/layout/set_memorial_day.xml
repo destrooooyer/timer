@@ -2,12 +2,14 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:orientation="vertical">
+              android:orientation="vertical"
+              android:background="@drawable/bg">
 
     <android.support.v7.widget.Toolbar
         android:id="@+id/set_memorial_toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/myToolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -48,18 +50,22 @@
         android:id="@+id/set_memorial_datepicker"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textAlignment="center"></DatePicker>
+        android:textAlignment="center"
+        android:calendarTextColor="@color/myBlack"></DatePicker>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="设置纪念日名称："
-        android:textSize="15sp"/>
+        android:textSize="15sp"
+        android:textColor="@color/myBlack"/>
 
     <EditText
         android:id="@+id/set_memorial_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:shadowColor="@color/myBlack"
+        android:textColor="@color/myBlack"
         android:singleLine="true"/>
 
 </LinearLayout>

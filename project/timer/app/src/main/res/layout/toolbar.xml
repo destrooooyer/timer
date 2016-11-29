@@ -3,5 +3,6 @@
                                    xmlns:app="http://schemas.android.com/apk/res-auto"
                                    android:id="@+id/toolbar"
                                    android:layout_width="match_parent"
-                                   android:layout_height="wrap_content">
+                                   android:layout_height="wrap_content"
+                                   android:titleTextColor="@color/myToolbar">
 </android.support.v7.widget.Toolbar>

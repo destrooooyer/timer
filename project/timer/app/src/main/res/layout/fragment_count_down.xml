@@ -14,7 +14,7 @@
         android:layout_gravity="center_horizontal"
         app:tickCircleDuration="total_time"
         app:tickEmptyRingColor="#555555"
-        app:tickTextColor="#999999"
+        app:tickTextColor="#0d0d0d"
         app:tickFillRingColor="#ff7f00"/>
 
     <LinearLayout
